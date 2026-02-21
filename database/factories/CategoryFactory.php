@@ -1,0 +1,30 @@
+<?php
+
+namespace Database\Factories;
+
+/**
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  FACTORY: CategoryFactory                                    ║
+ * ║  Purpose: Generate fake category data for seeding            ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ */
+
+use App\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+class CategoryFactory extends Factory
+{
+    protected $model = Category::class;
+
+    public function definition(): array
+    {
+        $name = fake()->unique()->word();
+        return [
+            'name'        => ucfirst($name),
+            'slug'        => Str::slug($name),
+            'color'       => fake()->hexColor(),
+            'description' => fake()->optional()->sentence(),
+        ];
+    }
+}
