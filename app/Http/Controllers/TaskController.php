@@ -75,7 +75,17 @@ class TaskController extends Controller
             return Category::all();
         });
 
-        return view('tasks.index', compact('tasks', 'categories'));
+        // Task counts for the status summary cards
+        $taskCounts = Cache::remember("task_counts_{$user->id}", 180, function () use ($user) {
+            return [
+                'total'       => $user->tasks()->count(),
+                'pending'     => $user->tasks()->status('pending')->count(),
+                'in_progress' => $user->tasks()->status('in_progress')->count(),
+                'completed'   => $user->tasks()->status('completed')->count(),
+            ];
+        });
+
+        return view('tasks.index', compact('tasks', 'categories', 'taskCounts'));
     }
 
     // ──────────────────────────────────────────────

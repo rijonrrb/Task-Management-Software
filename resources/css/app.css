@@ -10,3 +10,27 @@
     --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* ── Dark Theme Pagination ── */
+nav[aria-label="Pagination Navigation"] span,
+nav[aria-label="Pagination Navigation"] a {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #9ca3af !important;
+}
+
+nav[aria-label="Pagination Navigation"] a:hover {
+    background-color: #21262d !important;
+    color: #e5e7eb !important;
+}
+
+nav[aria-label="Pagination Navigation"] span[aria-current="page"] span {
+    background-color: #0d9488 !important;
+    border-color: #0d9488 !important;
+    color: #fff !important;
+}
+
+/* ── Dark select/input date picker icon ── */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+}
