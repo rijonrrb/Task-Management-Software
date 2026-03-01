@@ -1,28 +1,31 @@
-{{--
-╔══════════════════════════════════════════════════════════════╗
-║  VIEW: Create Task                                           ║
-║  Learning: Form building, validation errors, select options  ║
-╚══════════════════════════════════════════════════════════════╝
---}}
 @extends('layouts.app')
 @section('title', 'Create Task')
 
 @section('content')
     {{-- Breadcrumb --}}
-    <div class="flex items-center gap-2 text-xs text-gray-600 mb-6">
-        <a href="{{ route('tasks.index') }}" class="hover:text-gray-300 transition">Tasks</a>
-        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    <div class="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500 mb-6 animate-fade-in">
+        <a href="{{ route('tasks.index') }}" class="hover:text-indigo-500 transition">Tasks</a>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-        <span class="text-gray-400">Create New</span>
+        <span class="text-slate-600 dark:text-slate-300">Create New</span>
     </div>
 
-    <div class="max-w-2xl">
-        <div class="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
+    <div class="max-w-2xl animate-fade-in-up">
+        <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl shadow-sm overflow-hidden">
             {{-- Header --}}
-            <div class="px-6 py-5 border-b border-[#30363d]">
-                <h1 class="text-lg font-semibold text-white">Create New Task</h1>
-                <p class="text-sm text-gray-500 mt-0.5">Fill in the details to create a new task</p>
+            <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-800 dark:text-white">Create New Task</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Fill in the details to create a new task</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Form --}}
@@ -31,52 +34,36 @@
 
                 {{-- Title --}}
                 <div>
-                    <label for="title" class="block text-xs font-medium text-gray-400 mb-1.5">
+                    <label for="title" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                         Task Title <span class="text-red-500">*</span>
                     </label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value="{{ old('title') }}"
-                        required
-                        autofocus
-                        class="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-teal-700 transition @error('title') border-red-600 @enderror"
-                        placeholder="e.g., Complete the project report"
-                    >
+                    <input type="text" id="title" name="title" value="{{ old('title') }}" required autofocus
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 transition-all @error('title') border-red-400 @enderror"
+                        placeholder="e.g., Complete the project report">
                     @error('title')
-                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Description --}}
                 <div>
-                    <label for="description" class="block text-xs font-medium text-gray-400 mb-1.5">Description</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="3"
-                        class="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-teal-700 transition @error('description') border-red-600 @enderror"
-                        placeholder="Add more details about this task..."
-                    >{{ old('description') }}</textarea>
+                    <label for="description" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Description</label>
+                    <textarea id="description" name="description" rows="3"
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-indigo-500 transition-all @error('description') border-red-400 @enderror"
+                        placeholder="Add more details about this task...">{{ old('description') }}</textarea>
                     @error('description')
-                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Two Columns: Priority & Category --}}
+                {{-- Two Columns --}}
                 <div class="grid sm:grid-cols-2 gap-4">
-                    {{-- Priority --}}
                     <div>
-                        <label for="priority" class="block text-xs font-medium text-gray-400 mb-1.5">
+                        <label for="priority" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                             Priority <span class="text-red-500">*</span>
                         </label>
-                        <select
-                            id="priority"
-                            name="priority"
-                            required
-                            class="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-gray-300 focus:outline-none focus:border-teal-700 transition"
-                        >
+                        <select id="priority" name="priority" required
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all">
                             <option value="low" {{ old('priority') === 'low' ? 'selected' : '' }}>Low</option>
                             <option value="medium" {{ old('priority', 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
                             <option value="high" {{ old('priority') === 'high' ? 'selected' : '' }}>High</option>
@@ -84,14 +71,10 @@
                         </select>
                     </div>
 
-                    {{-- Category --}}
                     <div>
-                        <label for="category_id" class="block text-xs font-medium text-gray-400 mb-1.5">Category</label>
-                        <select
-                            id="category_id"
-                            name="category_id"
-                            class="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-gray-300 focus:outline-none focus:border-teal-700 transition"
-                        >
+                        <label for="category_id" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Category</label>
+                        <select id="category_id" name="category_id"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all">
                             <option value="">No Category</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -104,29 +87,21 @@
 
                 {{-- Due Date --}}
                 <div>
-                    <label for="due_date" class="block text-xs font-medium text-gray-400 mb-1.5">Due Date</label>
-                    <input
-                        type="date"
-                        id="due_date"
-                        name="due_date"
-                        value="{{ old('due_date') }}"
-                        min="{{ date('Y-m-d') }}"
-                        class="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-lg text-sm text-gray-300 focus:outline-none focus:border-teal-700 transition @error('due_date') border-red-600 @enderror"
-                    >
+                    <label for="due_date" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Due Date</label>
+                    <input type="date" id="due_date" name="due_date" value="{{ old('due_date') }}" min="{{ date('Y-m-d') }}"
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all @error('due_date') border-red-400 @enderror">
                     @error('due_date')
-                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Submit Buttons --}}
-                <div class="flex items-center gap-3 pt-4 border-t border-[#30363d]">
-                    <button
-                        type="submit"
-                        class="px-5 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-500 transition"
-                    >
+                {{-- Submit --}}
+                <div class="flex items-center gap-3 pt-5 border-t border-slate-100 dark:border-slate-700/50">
+                    <button type="submit"
+                        class="px-6 py-3 gradient-primary text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-200 btn-press">
                         Create Task
                     </button>
-                    <a href="{{ route('tasks.index') }}" class="px-5 py-2.5 text-sm text-gray-500 hover:text-gray-300 transition">
+                    <a href="{{ route('tasks.index') }}" class="px-6 py-3 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition">
                         Cancel
                     </a>
                 </div>
