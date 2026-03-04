@@ -86,15 +86,15 @@ Route::middleware('auth')->group(function () {
      * Redis Demo — Interactive Redis Playground
      * All Redis demo routes under /redis-demo
      */
-    Route::prefix('redis-demo')->name('redis.')->group(function () {
-        Route::get('/', [RedisDemoController::class, 'index'])->name('demo');
-        Route::get('/info', [RedisDemoController::class, 'info'])->name('info');
-        Route::post('/strings', [RedisDemoController::class, 'strings'])->name('strings');
-        Route::post('/cache', [RedisDemoController::class, 'cacheDemo'])->name('cache');
-        Route::post('/lists', [RedisDemoController::class, 'lists'])->name('lists');
-        Route::post('/hashes', [RedisDemoController::class, 'hashes'])->name('hashes');
-        Route::post('/counter', [RedisDemoController::class, 'counter'])->name('counter');
-        Route::post('/flush', [RedisDemoController::class, 'flush'])->name('flush');
-    });
+    // Route::prefix('redis-demo')->name('redis.')->group(function () {
+    //     Route::get('/', [RedisDemoController::class, 'index'])->name('demo');
+    //     Route::get('/info', [RedisDemoController::class, 'info'])->name('info');
+    //     Route::post('/strings', [RedisDemoController::class, 'strings'])->name('strings');
+    //     Route::post('/cache', [RedisDemoController::class, 'cacheDemo'])->name('cache');
+    //     Route::post('/lists', [RedisDemoController::class, 'lists'])->name('lists');
+    //     Route::post('/hashes', [RedisDemoController::class, 'hashes'])->name('hashes');
+    //     Route::post('/counter', [RedisDemoController::class, 'counter'])->name('counter');
+    //     Route::post('/flush', [RedisDemoController::class, 'flush'])->name('flush');
+    // });
 });
 

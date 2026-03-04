@@ -207,7 +207,22 @@
                     </div>
                     @endif
 
-                    {{-- Footer: Due Date + Actions --}}
+                                        {{-- Progress Bar --}}
+                    @php
+                        $__pct = $task->status === 'completed' ? 100 : ($task->status === 'in_progress' ? 50 : 0);
+                        $__barColor = $task->status === 'completed' ? '#10b981' : ($task->status === 'in_progress' ? '#f59e0b' : ($task->status === 'cancelled' ? '#ef4444' : '#60a5fa'));
+                    @endphp
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500">Progress</span>
+                            <span class="text-[10px] font-semibold" style="color:{{ $__barColor }}">{{ $__pct }}%</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500" style="width:{{ $__pct }}%;background-color:{{ $__barColor }};"></div>
+                        </div>
+                    </div>
+
+{{-- Footer: Due Date + Actions --}}
                     <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700/50">
                         <div class="flex items-center gap-1.5 text-xs {{ $task->is_overdue ? 'text-red-500' : 'text-slate-400 dark:text-slate-500' }}">
                             @if($task->due_date)

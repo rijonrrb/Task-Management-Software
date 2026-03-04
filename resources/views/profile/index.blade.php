@@ -2,29 +2,30 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div class="max-w-3xl animate-fade-in-up">
 
-    {{-- Page Header --}}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">My Profile</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account information and settings</p>
-    </div>
+{{-- Page Header (outside grid so both columns align at the same start) --}}
+<div class="mb-4">
+    <h1 class="text-2xl font-bold text-slate-800 dark:text-white">My Profile</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account information and settings</p>
+</div>
 
-    {{-- Tab Navigation --}}
-    <div class="flex gap-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 mb-6 w-fit" id="profile-tabs">
-        <button onclick="switchTab('info')" id="tab-info"
-            class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm">
-            Profile Info
-        </button>
-        <button onclick="switchTab('password')" id="tab-password"
-            class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
-            Password
-        </button>
-        <button onclick="switchTab('danger')" id="tab-danger"
-            class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-red-500">
-            Danger Zone
-        </button>
-    </div>
+{{-- Tab Navigation (outside grid) --}}
+<div class="flex gap-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 mb-5 w-fit" id="profile-tabs">
+    <button onclick="switchTab('info')" id="tab-info"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm">
+        Profile Info
+    </button>
+    <button onclick="switchTab('password')" id="tab-password"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+        Password
+    </button>
+    <button onclick="switchTab('danger')" id="tab-danger"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-red-500">
+        Danger Zone
+    </button>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6 animate-fade-in-up items-start"><div class="lg:col-span-2">
 
     {{-- ══════ TAB: Profile Info ══════ --}}
     <div id="panel-info" class="tab-panel space-y-5">
@@ -196,7 +197,90 @@
             </div>
         </div>
     </div>
+
 </div>
+
+<div class="space-y-4 animate-fade-in-up sticky top-24">
+
+    {{-- Profile Identity Card --}}
+    <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-sm">
+        {{-- Header: gradient banner with centered avatar only --}}
+        <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-3 flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl"
+                 style="background: #7573ff;border:3px solid rgba(255,255,255,0.5);backdrop-filter:blur(4px);">
+                <span class="text-white">{{ strtoupper(substr(auth()->user()->first_name ?? 'U', 0, 1)) }}</span>
+            </div>
+        </div>
+        {{-- Body: name, email, member since --}}
+        <div class="flex flex-col items-center py-4 px-5 border-t border-slate-100 dark:border-slate-700/50">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white text-center">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-0.5">{{ auth()->user()->email }}</p>
+            <span class="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Member since {{ auth()->user()->created_at->format('M Y') }}
+            </span>
+        </div>
+    </div>
+
+    @php
+        $userTasks = auth()->user()->tasks ?? collect();
+        $totalTasks = $userTasks->count();
+        $completedTasks = $userTasks->where('status','completed')->count();
+        $pendingTasks = $userTasks->where('status','pending')->count();
+        $inProgressTasks = $userTasks->where('status','in_progress')->count();
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
+    @endphp
+    <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm">
+        <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">My Task Stats</h3>
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-500 dark:text-slate-400">Completion</span>
+            <span class="text-xs font-bold text-indigo-500">{{ $completionRate }}%</span>
+        </div>
+        <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+            <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style="width:{{ $completionRate }}%"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+            <div class="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-2.5 text-center">
+                <div class="text-lg font-bold text-emerald-500">{{ $completedTasks }}</div>
+                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Done</div>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-2.5 text-center">
+                <div class="text-lg font-bold text-amber-500">{{ $inProgressTasks }}</div>
+                <div class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Active</div>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-2.5 text-center">
+                <div class="text-lg font-bold text-blue-500">{{ $pendingTasks }}</div>
+                <div class="text-[10px] text-blue-600 dark:text-blue-400 font-medium">To Do</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30">
+            <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quick Links</h3>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-slate-700/50">
+            <a href="{{ route('tasks.index') }}" class="flex items-center gap-3 px-5 py-3 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-indigo-500 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                My Tasks
+            </a>
+            <a href="{{ route('tasks.create') }}" class="flex items-center gap-3 px-5 py-3 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-indigo-500 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                New Task
+            </a>
+            <a href="{{ route('categories.index') }}" class="flex items-center gap-3 px-5 py-3 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-indigo-500 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                Categories
+            </a>
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-5 py-3 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-indigo-500 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+
 
 <script>
 function switchTab(tab) {

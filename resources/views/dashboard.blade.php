@@ -203,10 +203,10 @@
                         <span class="ml-auto text-xs bg-red-50 dark:bg-red-500/10 text-red-500 px-2 py-0.5 rounded-lg font-medium">{{ $stats['overdue_tasks'] }}</span>
                     </a>
                     @endif
-                    <a href="{{ route('redis.demo') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                    {{-- <a href="{{ route('redis.demo') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
                         <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
                         <span>Redis Playground</span>
-                    </a>
+                    </a> --}}
                 </div>
             </div>
 
