@@ -29,3 +29,21 @@ Broadcast::channel('tasks.{userId}', function ($user, $userId) {
     // Only allow if the authenticated user's ID matches the channel ID
     return (int) $user->id === (int) $userId;
 });
+
+/**
+ * Private channel: ticket.{ticketId}
+ *
+ * Allows the ticket owner and admin users to listen for live chat messages.
+ */
+Broadcast::channel('ticket.{ticketId}', function ($user, $ticketId) {
+    $ticket = \App\Models\SupportTicket::find($ticketId);
+    if (!$ticket) {
+        return false;
+    }
+
+    if ($user instanceof \App\Models\Admin) {
+        return true;
+    }
+
+    return $user instanceof \App\Models\User && $user->id === $ticket->user_id;
+}, ['guards' => ['web', 'admin']]);

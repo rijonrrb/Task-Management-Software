@@ -14,6 +14,7 @@ namespace Database\Seeders;
  */
 
 use App\Models\Category;
+use App\Models\Admin;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -24,18 +25,32 @@ class DatabaseSeeder extends Seeder
     {
         // ── Step 1: Create demo user ────────────────────────────
         // You can log in with this account for testing
-        $demoUser = User::factory()->create([
-            'name'     => 'Rijon Demo',
-            'email'    => 'demo@taskflow.com',
-            'password' => 'password', // Hashed automatically by model cast
-        ]);
+        $demoUser = User::firstOrCreate(
+            ['email' => 'demo@taskflow.com'],
+            [
+                'name'     => 'Rijon Demo',
+                'password' => 'password', // Hashed automatically by model cast
+            ]
+        );
+
+        // Create admin user
+        Admin::firstOrCreate(
+            ['email' => 'admin@taskflow.com'],
+            [
+                'name'      => 'Admin',
+                'password'  => 'password',
+                'is_active' => true,
+            ]
+        );
 
         // Create a second user for testing multi-user scenarios
-        $secondUser = User::factory()->create([
-            'name'     => 'Jane Smith',
-            'email'    => 'jane@taskflow.com',
-            'password' => 'password',
-        ]);
+        $secondUser = User::firstOrCreate(
+            ['email' => 'jane@taskflow.com'],
+            [
+                'name'     => 'Jane Smith',
+                'password' => 'password',
+            ]
+        );
 
         // ── Step 2: Create categories ───────────────────────────
         $categories = collect([
@@ -45,7 +60,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Health',   'slug' => 'health',   'color' => '#EF4444', 'description' => 'Health and fitness tasks'],
             ['name' => 'Learning', 'slug' => 'learning', 'color' => '#8B5CF6', 'description' => 'Study and learning goals'],
             ['name' => 'Finance',  'slug' => 'finance',  'color' => '#06B6D4', 'description' => 'Financial tasks and reminders'],
-        ])->map(fn($cat) => Category::create($cat));
+        ])->map(fn($cat) => Category::firstOrCreate(['slug' => $cat['slug']], $cat));
 
         // ── Step 3: Create sample tasks for demo user ───────────
         $sampleTasks = [

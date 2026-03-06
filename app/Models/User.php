@@ -12,6 +12,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -30,6 +31,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_banned',
+        'ban_reason',
+        'banned_at',
+        'last_ip',
+        'last_user_agent',
+        'last_login_at',
+        'login_count',
+        'failed_login_attempts',
+        'locked_until',
     ];
 
     /**
@@ -52,6 +62,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_banned' => 'boolean',
+            'banned_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'locked_until' => 'datetime',
         ];
     }
 
@@ -93,5 +107,34 @@ class User extends Authenticatable
             $initials .= strtoupper(substr($word, 0, 1));
         }
         return $initials;
+    }
+
+    public function isBanned(): bool
+    {
+        return (bool) $this->is_banned;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_until && $this->locked_until->isFuture();
+    }
+
+    // ── Additional Relationships ──
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function ticketMessages(): HasMany
+    {
+        return $this->hasMany(TicketMessage::class);
+    }
+
+    // ── Scopes ──
+
+    public function scopeBanned(Builder $query): Builder
+    {
+        return $query->where('is_banned', true);
     }
 }

@@ -11,6 +11,8 @@ namespace App\Http\Controllers;
  */
 
 use App\Models\User;
+use App\Rules\ValidEmailDomain;
+use App\Services\SecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -46,8 +48,8 @@ class AuthController extends Controller
         // Step 1: Validate — Laravel automatically returns errors if validation fails
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(6)],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users', new ValidEmailDomain],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()->mixedCase()],
         ]);
 
         // Step 2: Create the user (password is auto-hashed via model cast)
@@ -101,10 +103,18 @@ class AuthController extends Controller
             // Step 3: Regenerate session ID for security
             $request->session()->regenerate();
 
+            // Track login metadata
+            SecurityService::logLoginAttempt($request, true, 'web');
+            SecurityService::trackUserLogin(Auth::user(), $request);
+
             // Step 4: Redirect to the page they were trying to access, or dashboard
             return redirect()->intended(route('dashboard'))
                              ->with('success', 'Welcome back, ' . Auth::user()->first_name . '!');
         }
+
+        // Track failed attempt
+        SecurityService::logLoginAttempt($request, false, 'web');
+        SecurityService::trackFailedLogin($request->input('email'));
 
         // If login fails, redirect back with error
         return back()->withErrors([

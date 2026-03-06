@@ -11,9 +11,12 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RedisDemoController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\TaskController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // ──────────────────────────────────────────────
@@ -24,7 +27,11 @@ use Illuminate\Support\Facades\Route;
  * Home page — redirects to dashboard if logged in, login page if not
  */
 Route::get('/', function () {
-    return auth()->check()
+    if (Auth::guard('admin')->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return Auth::guard('web')->check()
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
@@ -38,9 +45,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // Login
+    // Login (with brute force protection)
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('brute.force');
 });
 
 // ──────────────────────────────────────────────
@@ -96,5 +103,21 @@ Route::middleware('auth')->group(function () {
     //     Route::post('/counter', [RedisDemoController::class, 'counter'])->name('counter');
     //     Route::post('/flush', [RedisDemoController::class, 'flush'])->name('flush');
     // });
+
+    /**
+     * Support Tickets (User-facing)
+     */
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/', [SupportTicketController::class, 'index'])->name('index');
+        Route::get('/create', [SupportTicketController::class, 'create'])->name('create');
+        Route::post('/', [SupportTicketController::class, 'store'])->name('store');
+        Route::get('/{ticket}', [SupportTicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply', [SupportTicketController::class, 'reply'])->name('reply');
+    });
 });
+
+// ──────────────────────────────────────────────
+// PUBLIC CUSTOM PAGES (must be last to avoid route conflicts)
+// ──────────────────────────────────────────────
+Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show');
 
