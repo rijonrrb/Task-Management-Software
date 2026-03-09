@@ -16,8 +16,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = User::withCount(['tasks', 'supportTickets'])->select('users.*');
-
+            $query = User::select('users.*')->withCount(['tasks', 'supportTickets']);
+  
             return DataTables::eloquent($query)
                 ->addColumn('name_html', function (User $user) {
                     $initials = e($user->initials);

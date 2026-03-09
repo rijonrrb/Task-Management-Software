@@ -46,44 +46,45 @@
 
 @push('scripts')
 <script>
-var activeStatus = '';
+$(function () {
+    var activeStatus = '';
 
-var ticketsTable = new DataTable('#ticketsTable', {
-    processing: true,
-    serverSide: true,
-    responsive: true,
-    ajax: {
-        url: '{{ route('admin.tickets.index') }}',
-        data: function (d) {
-            d.status = activeStatus;
-        }
-    },
-    columns: [
-        { data: 'ticket_html',   name: 'subject',            orderable: true,  searchable: true },
-        { data: 'user_html',     name: 'user.name',          orderable: false, searchable: false, responsivePriority: 3 },
-        { data: 'priority_html', name: 'priority',           orderable: true,  searchable: false, responsivePriority: 4 },
-        { data: 'status_html',   name: 'status',             orderable: true,  searchable: false, responsivePriority: 2 },
-        { data: 'assigned_html', name: 'assigned_admin_id',  orderable: false, searchable: false, responsivePriority: 5 },
-        { data: 'created_at',    name: 'created_at',         orderable: true,  searchable: false, responsivePriority: 4 },
-        { data: 'actions',       name: 'actions',            orderable: false, searchable: false, responsivePriority: 1 },
-    ],
-    language: {
-        processing: '<span class="text-indigo-600">Loading tickets…</span>',
-        emptyTable: '<div class="py-10 text-center text-gray-400">No tickets found</div>',
-    },
-    pageLength: 15,
-    order: [[5, 'desc']],
-});
-
-function filterTickets(status) {
-    activeStatus = status;
-    // Update tab active state
-    document.querySelectorAll('#ticketStatusTabs button').forEach(function(btn) {
-        var s = btn.getAttribute('data-status');
-        btn.className = 'btn-admin btn-admin-sm ' + (s === status ? 'btn-admin-primary' : 'btn-admin-outline');
+    var ticketsTable = $('#ticketsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        ajax: {
+            url: '{{ route('admin.tickets.index') }}',
+            data: function (d) {
+                d.status = activeStatus;
+            }
+        },
+        columns: [
+            { data: 'ticket_html',   name: 'subject',           orderable: true,  searchable: true,  defaultContent: '' },
+            { data: 'user_html',     name: 'user.name',         orderable: false, searchable: false, responsivePriority: 3, defaultContent: '' },
+            { data: 'priority_html', name: 'priority',          orderable: true,  searchable: false, responsivePriority: 4, defaultContent: '' },
+            { data: 'status_html',   name: 'status',            orderable: true,  searchable: false, responsivePriority: 2, defaultContent: '' },
+            { data: 'assigned_html', name: 'assigned_admin_id', orderable: false, searchable: false, responsivePriority: 5, defaultContent: '' },
+            { data: 'created_at',    name: 'created_at',        orderable: true,  searchable: false, responsivePriority: 4, defaultContent: '' },
+            { data: 'actions',       name: 'actions',           orderable: false, searchable: false, responsivePriority: 1, defaultContent: '' }
+        ],
+        language: {
+            processing: '<span class="text-indigo-600">Loading tickets…</span>',
+            emptyTable: '<div class="py-10 text-center text-gray-400"><svg class="w-10 h-10 mx-auto mb-2 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>No tickets found</div>'
+        },
+        pageLength: 15,
+        order: [[5, 'desc']]
     });
-    ticketsTable.ajax.reload();
-}
+
+    window.filterTickets = function (status) {
+        activeStatus = status;
+        $('#ticketStatusTabs button').each(function () {
+            var s = $(this).attr('data-status');
+            $(this).attr('class', 'btn-admin btn-admin-sm ' + (s === status ? 'btn-admin-primary' : 'btn-admin-outline'));
+        });
+        ticketsTable.ajax.reload();
+    };
+});
 </script>
 @endpush
 @endsection

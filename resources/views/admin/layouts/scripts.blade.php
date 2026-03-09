@@ -1,11 +1,18 @@
 {{-- Admin Scripts --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
-{{-- DataTables 2.x (jQuery-free) + Responsive --}}
-<script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/3.0.3/js/dataTables.responsive.min.js"></script>
+{{-- jQuery + DataTables 1.x + Responsive --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <script>
+// Setup CSRF token for all jQuery AJAX requests
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+});
 // ========== Metronic-style Sidebar Controller ==========
 const KTSidebar = {
     sidebar: null,
