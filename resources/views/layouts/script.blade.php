@@ -167,6 +167,47 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', fun
 });
 
 _updateThemeChecks();
+
+// Tasks dropdown
+var _tasksDropdownOpen = false;
+
+function _closeTasksDropdown() {
+    _tasksDropdownOpen = false;
+    var menu = document.getElementById('tasks-dropdown-menu');
+    if (menu) menu.classList.add('hidden');
+    var chevron = document.getElementById('tasks-chevron');
+    if (chevron) chevron.style.transform = '';
+}
+
+document.addEventListener('mousedown', function (e) {
+    var w = document.getElementById('tasks-dropdown-wrapper');
+    if (w && !w.contains(e.target)) _closeTasksDropdown();
+});
+
+var _tasksBtn = document.getElementById('tasks-dropdown-btn');
+if (_tasksBtn) {
+    _tasksBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var menu = document.getElementById('tasks-dropdown-menu');
+        if (!menu) return;
+        _tasksDropdownOpen = !_tasksDropdownOpen;
+        menu.classList.toggle('hidden', !_tasksDropdownOpen);
+        var chevron = document.getElementById('tasks-chevron');
+        if (chevron) chevron.style.transform = _tasksDropdownOpen ? 'rotate(180deg)' : '';
+    });
+}
+
+document.addEventListener('click', function (e) {
+    var delegatedBtn = e.target.closest && e.target.closest('#tasks-dropdown-btn');
+    if (!delegatedBtn) return;
+    var menu = document.getElementById('tasks-dropdown-menu');
+    if (!menu) return;
+    _tasksDropdownOpen = !_tasksDropdownOpen;
+    menu.classList.toggle('hidden', !_tasksDropdownOpen);
+    var chevron = document.getElementById('tasks-chevron');
+    if (chevron) chevron.style.transform = _tasksDropdownOpen ? 'rotate(180deg)' : '';
+    e.stopPropagation();
+});
 </script>
 
 {{-- Page-specific scripts injected by child views via @push('scripts') --}}

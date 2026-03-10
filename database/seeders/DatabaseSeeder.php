@@ -96,6 +96,9 @@ class DatabaseSeeder extends Seeder
             'category_id' => $categories->random()->id,
         ]);
 
+        // ── Step 5: Seed Career Paths ─────────────────────────────
+        $this->call(CareerPathSeeder::class);
+
         // ── Summary ─────────────────────────────────────────────
         $this->command->info('');
         $this->command->info('✅ Database seeded successfully!');

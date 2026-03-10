@@ -17,6 +17,8 @@ import TaskBoard from './components/TaskBoard.vue';
 import NotificationToast from './components/NotificationToast.vue';
 import RedisDemo from './components/RedisDemo.vue';
 import StatsCards from './components/StatsCards.vue';
+import CareerPathTaskForm from './components/CareerPathTaskForm.vue';
+import CareerPathStatusUpdater from './components/CareerPathStatusUpdater.vue';
 
 /**
  * Create and mount the Vue application.
@@ -36,6 +38,8 @@ app.component('task-board', TaskBoard);
 app.component('notification-toast', NotificationToast);
 app.component('redis-demo', RedisDemo);
 app.component('stats-cards', StatsCards);
+app.component('career-path-task-form', CareerPathTaskForm);
+app.component('career-path-status-updater', CareerPathStatusUpdater);
 
 // Mount Vue to the #app element in our Blade layout
 // Any Vue component tags inside #app will now work!

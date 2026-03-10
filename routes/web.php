@@ -9,6 +9,7 @@
  */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CareerPathController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
@@ -103,6 +104,26 @@ Route::middleware('auth')->group(function () {
     //     Route::post('/counter', [RedisDemoController::class, 'counter'])->name('counter');
     //     Route::post('/flush', [RedisDemoController::class, 'flush'])->name('flush');
     // });
+
+    /**
+     * Career Path — Skill Roadmap & Learning Paths
+     */
+    Route::prefix('career-path')->name('career-path.')->group(function () {
+        Route::get('/', [CareerPathController::class, 'index'])->name('index');
+        Route::get('/create', [CareerPathController::class, 'create'])->name('create');
+        Route::post('/', [CareerPathController::class, 'store'])->name('store');
+        Route::get('/{careerPath}', [CareerPathController::class, 'show'])->name('show');
+        Route::get('/{careerPath}/edit', [CareerPathController::class, 'edit'])->name('edit');
+        Route::put('/{careerPath}', [CareerPathController::class, 'update'])->name('update');
+        Route::delete('/{careerPath}', [CareerPathController::class, 'destroy'])->name('destroy');
+
+        // Nested Task routes
+        Route::post('/{careerPath}/tasks', [CareerPathController::class, 'storeTask'])->name('tasks.store');
+        Route::get('/{careerPath}/tasks/{task}', [CareerPathController::class, 'showTask'])->name('task.show');
+        Route::get('/{careerPath}/tasks/{task}/edit', [CareerPathController::class, 'editTask'])->name('task.edit');
+        Route::put('/{careerPath}/tasks/{task}', [CareerPathController::class, 'updateTask'])->name('task.update');
+        Route::delete('/{careerPath}/tasks/{task}', [CareerPathController::class, 'destroyTask'])->name('tasks.destroy');
+    });
 
     /**
      * Support Tickets (User-facing)

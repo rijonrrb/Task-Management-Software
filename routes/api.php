@@ -14,6 +14,7 @@
  * so we can share the same auth session.
  */
 
+use App\Http\Controllers\CareerPathController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth'])->group(function () {
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])
          ->name('api.tasks.status');
+
+    // Career Path Task Status (used by CareerPathStatusUpdater.vue)
+    Route::patch('/career-path-tasks/{task}/status', [CareerPathController::class, 'updateTaskStatus'])
+         ->name('api.career-path-tasks.status');
 });
