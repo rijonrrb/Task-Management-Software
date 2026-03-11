@@ -103,27 +103,36 @@
                     </div>
                 </div>
 
-                {{-- Video Section --}}
+                {{-- Video Content Section --}}
                 <div class="space-y-4 pt-5 border-t border-slate-100 dark:border-slate-700/50">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-2">
-                        <div class="w-6 h-6 rounded bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
-                            <span class="text-[10px] font-bold text-red-600 dark:text-red-400">2</span>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-2">
+                            <div class="w-6 h-6 rounded bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+                                <span class="text-[10px] font-bold text-red-600 dark:text-red-400">2</span>
+                            </div>
+                            Video Content
+                        </h3>
+                        <button type="button" onclick="addVideo()" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            Add Video
+                        </button>
+                    </div>
+                    @php
+                        $existingVideos = old('videos', $task->resources->where('type', 'video')->values()->toArray());
+                    @endphp
+                    <div id="videos-container" class="space-y-3">
+                        @forelse($existingVideos as $vi => $video)
+                        <div class="video-row flex items-center gap-3 p-3 bg-red-50/40 dark:bg-red-500/5 border border-red-100 dark:border-red-500/20 rounded-xl relative group">
+                            <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <input type="text" name="videos[{{ $vi }}][title]" value="{{ is_array($video) ? ($video['title'] ?? '') : '' }}" placeholder="Label (optional)"
+                                class="w-1/3 px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                            <input type="url" name="videos[{{ $vi }}][url]" value="{{ is_array($video) ? ($video['url'] ?? '') : '' }}" placeholder="https://youtube.com/watch?v=..."
+                                class="flex-1 px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                            <button type="button" onclick="this.closest('.video-row').remove()" class="w-7 h-7 rounded-full bg-red-100 dark:bg-red-500/15 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs hover:bg-red-200 flex-shrink-0">✕</button>
                         </div>
-                        Video Content
-                    </h3>
-                    <div class="grid sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Video URL</label>
-                            <input type="url" name="video_url" value="{{ old('video_url', $task->video_url) }}"
-                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all"
-                                placeholder="https://www.youtube.com/watch?v=...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Duration (minutes)</label>
-                            <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $task->duration_minutes) }}" min="0"
-                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all"
-                                placeholder="e.g., 30">
-                        </div>
+                        @empty
+                        <p class="text-xs text-slate-400 dark:text-slate-500 italic" id="videos-empty">No videos added yet. Click "Add Video" to add one.</p>
+                        @endforelse
                     </div>
                 </div>
 
@@ -142,7 +151,7 @@
                         </button>
                     </div>
                     <div id="resources-container" class="space-y-3">
-                        @foreach(old('resources', $task->resources->toArray()) as $i => $resource)
+                        @foreach(old('resources', $task->resources->where('type', '!=', 'video')->values()->toArray()) as $i => $resource)
                         <div class="resource-row p-4 bg-slate-50/50 dark:bg-slate-700/20 border border-slate-100 dark:border-slate-700/50 rounded-xl relative group" data-index="{{ $i }}">
                             <button type="button" onclick="this.closest('.resource-row').remove()" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs">✕</button>
                             <div class="grid sm:grid-cols-4 gap-3">
@@ -221,8 +230,22 @@
 
     @push('scripts')
     <script>
-        let resourceIndex = {{ count(old('resources', $task->resources->toArray())) }};
+        let resourceIndex = {{ count(old('resources', $task->resources->where('type', '!=', 'video')->values()->toArray())) }};
         let keywordIndex = {{ count(old('keywords', $task->keywords->toArray())) }};
+        let videoIndex = {{ count(old('videos', $task->resources->where('type', 'video')->values()->toArray())) }};
+
+        function addVideo() {
+            const emptyNote = document.getElementById('videos-empty');
+            if (emptyNote) emptyNote.remove();
+            const i = videoIndex++;
+            const html = `<div class="video-row flex items-center gap-3 p-3 bg-red-50/40 dark:bg-red-500/5 border border-red-100 dark:border-red-500/20 rounded-xl relative group">
+                <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <input type="text" name="videos[${i}][title]" placeholder="Label (optional)" class="w-1/3 px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                <input type="url" name="videos[${i}][url]" placeholder="https://youtube.com/watch?v=..." class="flex-1 px-3 py-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                <button type="button" onclick="this.closest('.video-row').remove()" class="w-7 h-7 rounded-full bg-red-100 dark:bg-red-500/15 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs hover:bg-red-200 flex-shrink-0">✕</button>
+            </div>`;
+            document.getElementById('videos-container').insertAdjacentHTML('beforeend', html);
+        }
 
         function addResource() {
             const i = resourceIndex++;

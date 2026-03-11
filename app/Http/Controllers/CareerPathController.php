@@ -350,9 +350,10 @@ class CareerPathController extends Controller
             'estimated_hours'  => ['nullable', 'integer', 'min:1', 'max:1000'],
             'start_date'       => ['nullable', 'date'],
             'due_date'         => ['nullable', 'date'],
-            'video_url'        => ['nullable', 'url', 'max:500'],
-            'video_type'       => ['nullable', 'in:youtube,vimeo,upload,other'],
-            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:10000'],
+            // Multiple videos
+            'videos'           => ['nullable', 'array', 'max:20'],
+            'videos.*.title'   => ['nullable', 'string', 'max:255'],
+            'videos.*.url'     => ['required_with:videos', 'url', 'max:500'],
             // Resources
             'resources'          => ['nullable', 'array', 'max:20'],
             'resources.*.id'     => ['nullable', 'integer'],
@@ -370,6 +371,13 @@ class CareerPathController extends Controller
             'keywords.*.importance'  => ['nullable', 'in:essential,important,good_to_know'],
         ]);
 
+        // Extract videos before task update
+        $videos = $validated['videos'] ?? [];
+        unset($validated['videos']);
+        // Set video_url to first video for backward compatibility
+        $validated['video_url'] = !empty($videos) && !empty($videos[0]['url']) ? $videos[0]['url'] : null;
+        $validated['duration_minutes'] = null;
+
         if ($validated['status'] === 'completed' && $task->status !== 'completed') {
             $validated['completed_at'] = now();
         } elseif ($validated['status'] !== 'completed') {
@@ -380,21 +388,29 @@ class CareerPathController extends Controller
         try {
             $task->update($validated);
 
-            // Sync resources
+            // Sync all resources: delete everything, recreate non-video resources + video resources
             $task->resources()->delete();
-            if (!empty($validated['resources'])) {
-                foreach ($validated['resources'] as $i => $res) {
-                    CareerPathResource::create([
-                        'career_path_task_id' => $task->id,
-                        'type'        => $res['type'],
-                        'title'       => $res['title'],
-                        'url'         => $res['url'],
-                        'description' => $res['description'] ?? null,
-                        'provider'    => $res['provider'] ?? null,
-                        'is_free'     => $res['is_free'] ?? true,
-                        'sort_order'  => $i,
-                    ]);
-                }
+            $allResources = array_merge(
+                array_values($validated['resources'] ?? []),
+                array_map(fn($v, $i) => [
+                    'type'       => 'video',
+                    'title'      => $v['title'] ?: 'Video ' . ($i + 1),
+                    'url'        => $v['url'],
+                    'is_free'    => true,
+                    'sort_order' => count($validated['resources'] ?? []) + $i,
+                ], array_filter($videos, fn($v) => !empty($v['url'])), array_keys(array_filter($videos, fn($v) => !empty($v['url']))))
+            );
+            foreach ($allResources as $i => $res) {
+                CareerPathResource::create([
+                    'career_path_task_id' => $task->id,
+                    'type'        => $res['type'],
+                    'title'       => $res['title'],
+                    'url'         => $res['url'],
+                    'description' => $res['description'] ?? null,
+                    'provider'    => $res['provider'] ?? null,
+                    'is_free'     => $res['is_free'] ?? true,
+                    'sort_order'  => $res['sort_order'] ?? $i,
+                ]);
             }
 
             // Sync keywords

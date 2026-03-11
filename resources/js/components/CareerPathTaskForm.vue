@@ -4,10 +4,12 @@
         <button
             v-if="!isOpen"
             @click="isOpen = true"
-            class="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed rounded-xl text-sm font-medium transition-all duration-200 w-full justify-center group"
+            class="group inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all duration-200 hover:scale-105 hover:shadow-sm active:scale-95 mt-3"
             :class="depthClasses.button"
         >
-            <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:rotate-90" :class="depthClasses.iconBg">
+                <svg class="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+            </span>
             {{ buttonLabel }}
         </button>
 
@@ -74,19 +76,31 @@
                             class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:border-indigo-500 transition-all"
                             placeholder="Detailed learning content..."></textarea>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1.5">Video URL</label>
-                            <input v-model="form.video_url" type="url"
-                                class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all"
-                                placeholder="https://youtube.com/...">
+                    <!-- Multiple Videos -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                                <svg class="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Videos
+                            </label>
+                            <button type="button" @click="addVideo" class="text-[10px] text-red-500 hover:text-red-600 font-medium transition">+ Add Video</button>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1.5">Duration (min)</label>
-                            <input v-model="form.duration_minutes" type="number" min="0"
-                                class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-700 dark:text-slate-300 focus:border-indigo-500 transition-all"
-                                placeholder="30">
+                        <div v-for="(video, idx) in form.videos" :key="idx" class="flex items-center gap-2 mb-2">
+                            <div class="flex-1 grid grid-cols-2 gap-2">
+                                <input v-model="video.title" type="text" placeholder="Label (optional)"
+                                    class="px-2.5 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-[11px] text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                                <input v-model="video.url" type="url" placeholder="https://youtube.com/..."
+                                    class="px-2.5 py-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-[11px] text-slate-800 dark:text-slate-200 focus:border-red-400 transition-all">
+                            </div>
+                            <button type="button" @click="form.videos.splice(idx, 1)" class="w-5 h-5 text-red-400 hover:text-red-500 transition flex-shrink-0">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
                         </div>
+                        <button v-if="form.videos.length === 0" type="button" @click="addVideo"
+                            class="text-[11px] text-slate-400 hover:text-red-500 font-medium transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Add video links
+                        </button>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -199,7 +213,7 @@ export default {
     },
     computed: {
         depthLabel() {
-            return ['Main Task', 'Subtask', 'Sub-subtask'][this.depth] || 'Task';
+            return ['Task', 'Subtask', 'Sub-subtask'][this.depth] || 'Task';
         },
         buttonLabel() {
             return `Add ${this.depthLabel}`;
@@ -215,21 +229,24 @@ export default {
         depthClasses() {
             const configs = [
                 {
-                    button: 'border-indigo-200 dark:border-indigo-500/30 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10',
+                    button: 'border-indigo-300 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-400',
+                    iconBg: 'bg-indigo-100 dark:bg-indigo-500/25 text-indigo-600 dark:text-indigo-300 group-hover:bg-indigo-500 group-hover:text-white',
                     border: 'border-indigo-100 dark:border-indigo-500/20',
                     header: 'bg-indigo-50/50 dark:bg-indigo-500/5',
                     headerText: 'text-indigo-600 dark:text-indigo-400',
                     submitBtn: 'from-indigo-500 to-indigo-600 hover:shadow-lg hover:shadow-indigo-500/30'
                 },
                 {
-                    button: 'border-purple-200 dark:border-purple-500/30 text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/10',
+                    button: 'border-purple-300 dark:border-purple-500/40 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 hover:border-purple-400',
+                    iconBg: 'bg-purple-100 dark:bg-purple-500/25 text-purple-600 dark:text-purple-300 group-hover:bg-purple-500 group-hover:text-white',
                     border: 'border-purple-100 dark:border-purple-500/20',
                     header: 'bg-purple-50/50 dark:bg-purple-500/5',
                     headerText: 'text-purple-600 dark:text-purple-400',
                     submitBtn: 'from-purple-500 to-purple-600 hover:shadow-lg hover:shadow-purple-500/30'
                 },
                 {
-                    button: 'border-cyan-200 dark:border-cyan-500/30 text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-500/10',
+                    button: 'border-cyan-300 dark:border-cyan-500/40 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:border-cyan-400',
+                    iconBg: 'bg-cyan-100 dark:bg-cyan-500/25 text-cyan-600 dark:text-cyan-300 group-hover:bg-cyan-500 group-hover:text-white',
                     border: 'border-cyan-100 dark:border-cyan-500/20',
                     header: 'bg-cyan-50/50 dark:bg-cyan-500/5',
                     headerText: 'text-cyan-600 dark:text-cyan-400',
@@ -247,8 +264,7 @@ export default {
                 content: '',
                 priority: 'medium',
                 estimated_hours: '',
-                video_url: '',
-                duration_minutes: '',
+                videos: [],
                 start_date: '',
                 due_date: '',
                 resources: [],
@@ -257,6 +273,9 @@ export default {
         },
         addResource() {
             this.form.resources.push({ title: '', url: '', type: 'link', is_free: true });
+        },
+        addVideo() {
+            this.form.videos.push({ title: '', url: '' });
         },
         addKeyword() {
             this.form.keywords.push({ keyword: '', definition: '', importance: 'good_to_know' });
@@ -280,8 +299,16 @@ export default {
                 parent_id: this.parentId
             };
 
+            // Transform videos: set video_url to first, store all as video resources
+            const videosArr = payload.videos || [];
+            payload.video_url = videosArr.length > 0 ? videosArr[0].url : '';
+            const videoResources = videosArr
+                .filter(v => v.url)
+                .map(v => ({ title: v.title || 'Video', url: v.url, type: 'video', is_free: true }));
+            delete payload.videos;
+
             // Filter out empty resources and keywords
-            payload.resources = payload.resources.filter(r => r.title || r.url);
+            payload.resources = [...payload.resources.filter(r => r.title || r.url), ...videoResources];
             payload.keywords = payload.keywords.filter(k => k.keyword);
 
             try {
