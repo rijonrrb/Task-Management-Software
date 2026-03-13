@@ -92,18 +92,52 @@
                         </svg>
                         <h2 class="text-base font-semibold text-slate-800 dark:text-white">Recent Tasks</h2>
                     </div>
-                    <a href="{{ route('tasks.index') }}" class="text-sm text-indigo-500 hover:text-indigo-400 font-medium transition flex items-center gap-1">
-                        View All
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-amber-500 font-medium">Pin up to 3 tasks</span>
+                        <a href="{{ route('tasks.index') }}" class="text-sm text-indigo-500 hover:text-indigo-400 font-medium transition flex items-center gap-1">
+                            View All
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
+
+                <form action="{{ route('tasks.bulk-status') }}" method="POST" id="dashboard-bulk-form" class="hidden">
+                    @csrf
+                </form>
+                <div class="px-6 py-3 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/70 dark:bg-slate-900/30">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+                                <span class="relative block w-4 h-4 flex-shrink-0">
+                                    <input type="checkbox" id="dashboard-select-all" class="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <span class="absolute inset-0 rounded border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 peer-checked:bg-indigo-500 peer-checked:border-transparent transition-all duration-150"></span>
+                                    <svg class="absolute inset-0 w-full h-full p-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                </span>
+                                Select all
+                            </label>
+                            <select id="dashboard-bulk-status" class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                                <option value="">Bulk status...</option>
+                                <option value="pending">To Do</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button type="button" id="dashboard-bulk-submit" disabled class="text-xs px-3 py-1.5 rounded-lg bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 transition-colors">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
 
                 <div class="divide-y divide-slate-100 dark:divide-slate-700/30">
                     @forelse($recentTasks as $task)
-                        <a href="{{ route('tasks.show', $task) }}"
-                           class="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all duration-200 group">
+                        <div class="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all duration-200 group">
+                            <label class="relative flex-shrink-0 mt-1 block w-4 h-4 cursor-pointer">
+                                <input type="checkbox" value="{{ $task->id }}" data-task-id="{{ $task->id }}" class="peer dashboard-task-checkbox absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <span class="absolute inset-0 rounded border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 peer-checked:bg-indigo-500 peer-checked:border-transparent transition-all duration-150"></span>
+                                <svg class="absolute inset-0 w-full h-full p-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </label>
+
                             {{-- Status icon --}}
                             <div class="flex-shrink-0 mt-0.5">
                                 @if($task->status === 'completed')
@@ -118,18 +152,32 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                         </svg>
                                     </div>
+                                @elseif($task->status === 'cancelled')
+                                    <div class="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                                        <svg class="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </div>
                                 @else
-                                    <div class="w-6 h-6 rounded-lg border-2 border-slate-200 dark:border-slate-600"></div>
+                                    {{-- pending --}}
+                                    <div class="w-6 h-6 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-500"></div>
+                                    </div>
                                 @endif
                             </div>
 
                             {{-- Task Info --}}
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 truncate transition
-                                   {{ $task->status === 'completed' ? 'line-through text-slate-400 dark:text-slate-500' : '' }}">
-                                    {{ $task->title }}
-                                </p>
+                                <a href="{{ route('tasks.show', $task) }}" class="block">
+                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 truncate transition
+                                       {{ $task->status === 'completed' ? 'line-through text-slate-400 dark:text-slate-500' : '' }}">
+                                        {{ $task->title }}
+                                    </p>
+                                </a>
                                 <div class="flex items-center gap-2 mt-1">
+                                    @if($task->is_pinned)
+                                        <span class="text-[11px] text-amber-500 font-medium">Pinned</span>
+                                    @endif
                                     @if($task->category)
                                         <span class="text-xs text-slate-400 dark:text-slate-500">{{ $task->category->name }}</span>
                                     @endif
@@ -150,7 +198,16 @@
                                 @endif">
                                 {{ ucfirst($task->priority) }}
                             </span>
-                        </a>
+                            <form action="{{ route('tasks.pin', $task) }}" method="POST" class="flex-shrink-0">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="p-1.5 rounded-lg {{ $task->is_pinned ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10' }} transition-colors" title="{{ $task->is_pinned ? 'Unpin task' : 'Pin task' }}">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.5 2.5a1 1 0 011 0l4 2.3a1 1 0 01.5.87V9l1.4 1.4a1 1 0 01-.7 1.7H11v4.5a1 1 0 11-2 0V12.1H5.3a1 1 0 01-.7-1.7L6 9V5.67a1 1 0 01.5-.87l2-1.15z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     @empty
                         <div class="px-6 py-16 text-center">
                             <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
@@ -165,7 +222,7 @@
                             </a>
                         </div>
                     @endforelse
-                </div>
+                    </div>
             </div>
         </div>
 
@@ -235,3 +292,70 @@
     </div>
 
 @endsection
+
+@push('scripts')
+<script>
+window.addEventListener('load', function () {
+    var form = document.getElementById('dashboard-bulk-form');
+    if (!form) return;
+
+    function getBoxes() {
+        return Array.from(document.querySelectorAll('.dashboard-task-checkbox'));
+    }
+
+    function updateState() {
+        var boxes    = getBoxes();
+        var selected = boxes.filter(function (c) { return c.checked; });
+        var sa       = document.getElementById('dashboard-select-all');
+        var statusEl = document.getElementById('dashboard-bulk-status');
+        var btn      = document.getElementById('dashboard-bulk-submit');
+
+        if (sa) {
+            if (boxes.length > 0 && selected.length === boxes.length) {
+                sa.checked = true; sa.indeterminate = false;
+            } else if (selected.length > 0) {
+                sa.checked = false; sa.indeterminate = true;
+            } else {
+                sa.checked = false; sa.indeterminate = false;
+            }
+        }
+        if (btn) btn.disabled = (selected.length === 0 || !statusEl || !statusEl.value);
+    }
+
+    /* ── Event delegation — survives Vue's DOM replacement ── */
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'dashboard-select-all') {
+            var checked = e.target.checked;
+            getBoxes().forEach(function (cb) { cb.checked = checked; });
+        }
+        updateState();
+    });
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('#dashboard-bulk-submit');
+        if (!btn || btn.disabled) return;
+
+        var selected = getBoxes().filter(function (c) { return c.checked; });
+        var statusEl = document.getElementById('dashboard-bulk-status');
+        if (!selected.length || !statusEl || !statusEl.value) return;
+
+        /* Inject hidden task_ids + status into the hidden form, then submit */
+        form.querySelectorAll('.bulk-injected').forEach(function (el) { el.remove(); });
+        selected.forEach(function (cb) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'task_ids[]'; inp.value = cb.value;
+            inp.className = 'bulk-injected';
+            form.appendChild(inp);
+        });
+        var sinp = document.createElement('input');
+        sinp.type = 'hidden'; sinp.name = 'status'; sinp.value = statusEl.value;
+        sinp.className = 'bulk-injected';
+        form.appendChild(sinp);
+
+        form.submit();
+    });
+
+    updateState();
+});
+</script>
+@endpush

@@ -36,54 +36,54 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        // Build a unique cache key based on filters
-        $cacheKey = "tasks_{$user->id}_" . md5($request->fullUrl());
-
-        $tasks = Cache::remember($cacheKey, 180, function () use ($user, $request) {
-            $query = $user->tasks()->with('category');
+        $tasksQuery = $user->tasks()->with('category');
 
             // Apply optional filters
             if ($request->filled('status')) {
-                $query->status($request->status);
+                $tasksQuery->status($request->status);
             }
 
             if ($request->filled('priority')) {
-                $query->priority($request->priority);
+                $tasksQuery->priority($request->priority);
             }
 
             if ($request->filled('category')) {
-                $query->where('category_id', $request->category);
+                $tasksQuery->where('category_id', $request->category);
             }
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function ($q) use ($search) {
+                $tasksQuery->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%");
                 });
             }
 
             // Sort: default by created_at descending
-            $sortBy = $request->get('sort', 'created_at');
+            $allowedSorts = ['created_at', 'due_date', 'priority', 'status', 'title'];
+            $sortBy = in_array($request->get('sort', 'created_at'), $allowedSorts, true)
+                ? $request->get('sort', 'created_at')
+                : 'created_at';
             $sortDir = $request->get('direction', 'desc');
-            $query->orderBy($sortBy, $sortDir);
+            $sortDir = in_array($sortDir, ['asc', 'desc'], true) ? $sortDir : 'desc';
 
-            return $query->paginate(10)->withQueryString();
-        });
+            $tasksQuery->orderByDesc('is_pinned')
+                ->orderByDesc('pinned_at')
+                ->orderBy($sortBy, $sortDir);
+
+        $tasks = $tasksQuery->paginate(10)->withQueryString();
 
         $categories = Cache::remember('all_categories', 600, function () {
             return Category::all();
         });
 
         // Task counts for the status summary cards
-        $taskCounts = Cache::remember("task_counts_{$user->id}", 180, function () use ($user) {
-            return [
-                'total'       => $user->tasks()->count(),
-                'pending'     => $user->tasks()->status('pending')->count(),
-                'in_progress' => $user->tasks()->status('in_progress')->count(),
-                'completed'   => $user->tasks()->status('completed')->count(),
-            ];
-        });
+        $taskCounts = [
+            'total'       => $user->tasks()->count(),
+            'pending'     => $user->tasks()->status('pending')->count(),
+            'in_progress' => $user->tasks()->status('in_progress')->count(),
+            'completed'   => $user->tasks()->status('completed')->count(),
+        ];
 
         return view('tasks.index', compact('tasks', 'categories', 'taskCounts'));
     }
@@ -290,6 +290,71 @@ class TaskController extends Controller
             'task'    => $task,
             'message' => 'Status updated to ' . $task->status,
         ]);
+    }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'task_ids'   => ['required', 'array', 'min:1'],
+            'task_ids.*' => ['integer', 'exists:tasks,id'],
+            'status'     => ['required', 'in:pending,in_progress,completed,cancelled'],
+        ]);
+
+        $tasks = Task::query()
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $validated['task_ids'])
+            ->get();
+
+        if ($tasks->isEmpty()) {
+            return back()->with('error', 'No valid tasks selected.');
+        }
+
+        /** @var Task $task */
+        foreach ($tasks as $task) {
+            $payload = ['status' => $validated['status']];
+
+            if ($validated['status'] === 'completed') {
+                $payload['completed_at'] = now();
+            } else {
+                $payload['completed_at'] = null;
+            }
+
+            $task->update($payload);
+        }
+
+        $this->clearUserCache();
+
+        return back()->with('success', count($tasks) . ' task(s) updated successfully.');
+    }
+
+    public function togglePin(Task $task)
+    {
+        $this->authorizeTask($task);
+
+        if (!$task->is_pinned) {
+            $pinnedCount = Task::query()
+                ->where('user_id', Auth::id())
+                ->where('is_pinned', true)
+                ->count();
+
+            if ($pinnedCount >= 3) {
+                return back()->with('error', 'You can pin a maximum of 3 tasks.');
+            }
+
+            $task->update([
+                'is_pinned' => true,
+                'pinned_at' => now(),
+            ]);
+        } else {
+            $task->update([
+                'is_pinned' => false,
+                'pinned_at' => null,
+            ]);
+        }
+
+        $this->clearUserCache();
+
+        return back()->with('success', $task->is_pinned ? 'Task pinned successfully.' : 'Task unpinned successfully.');
     }
 
     // ──────────────────────────────────────────────

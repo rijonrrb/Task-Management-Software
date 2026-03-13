@@ -40,7 +40,13 @@ class CareerPathController extends Controller
             });
         }
 
-        $careerPaths = $query->orderBy('sort_order')->orderByDesc('created_at')->paginate(12)->withQueryString();
+        $careerPaths = $query
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('pinned_at')
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->paginate(12)
+            ->withQueryString();
 
         $counts = [
             'total'     => CareerPath::forUser($user->id)->count(),
@@ -179,6 +185,36 @@ class CareerPathController extends Controller
 
         return redirect()->route('career-path.index')
                          ->with('success', 'Career path deleted successfully!');
+    }
+
+    public function togglePin(CareerPath $careerPath)
+    {
+        $this->authorizeAccess($careerPath);
+
+        if (!$careerPath->is_pinned) {
+            $pinnedCount = CareerPath::query()
+                ->where('user_id', Auth::id())
+                ->where('is_pinned', true)
+                ->count();
+
+            if ($pinnedCount >= 3) {
+                return back()->with('error', 'You can pin a maximum of 3 career paths.');
+            }
+
+            $careerPath->update([
+                'is_pinned' => true,
+                'pinned_at' => now(),
+            ]);
+        } else {
+            $careerPath->update([
+                'is_pinned' => false,
+                'pinned_at' => null,
+            ]);
+        }
+
+        $this->clearCache();
+
+        return back()->with('success', $careerPath->is_pinned ? 'Career path pinned successfully.' : 'Career path unpinned successfully.');
     }
 
     // ── Task CRUD ──

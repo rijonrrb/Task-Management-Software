@@ -56,7 +56,9 @@ class DashboardController extends Controller
         $recentTasks = Cache::remember("recent_tasks_{$user->id}", 120, function () use ($user) {
             return $user->tasks()
                         ->with('category')          // Eager-load category (prevents N+1 problem)
-                        ->latest()                   // Order by newest first
+                        ->orderByDesc('is_pinned')
+                        ->orderByDesc('pinned_at')
+                        ->latest()                  // Order by newest first
                         ->take(5)                    // Only get 5 latest
                         ->get();
         });

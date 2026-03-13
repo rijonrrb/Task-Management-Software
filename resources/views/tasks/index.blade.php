@@ -136,10 +136,35 @@
         </form>
     </div>
 
+    <form action="{{ route('tasks.bulk-status') }}" method="POST" id="tasks-bulk-form" class="hidden">
+        @csrf
+    </form>
+    <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 flex flex-wrap items-center gap-2 mb-4">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                <span class="relative block w-[18px] h-[18px] flex-shrink-0">
+                    <input type="checkbox" id="tasks-select-all" class="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <span class="absolute inset-0 rounded border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 peer-checked:bg-indigo-500 peer-checked:border-transparent transition-all duration-150"></span>
+                    <svg class="absolute inset-0 w-full h-full p-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </span>
+                Select all on page
+            </label>
+            <select id="tasks-bulk-status" class="text-sm px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                <option value="">Update selected status...</option>
+                <option value="pending">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <button type="button" id="tasks-bulk-submit" disabled class="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 transition-colors">
+                Apply Bulk Update
+            </button>
+            <span class="text-xs text-amber-500 ml-auto">Pinned tasks stay at top (max 3).</span>
+        </div>
+
     {{-- ═══════════ TASK GRID ═══════════ --}}
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         @forelse($tasks as $index => $task)
-            <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden hover-lift hover-glow card-shine group animate-fade-in-up stagger-{{ min($index + 1, 8) }} opacity-0">
+            <div class="relative bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden hover-lift hover-glow card-shine group animate-fade-in-up stagger-{{ min($index + 1, 8) }} opacity-0">
                 {{-- Top Status Bar --}}
                 <div class="h-1
                     @if($task->status === 'completed') bg-emerald-500
@@ -150,14 +175,25 @@
                 </div>
 
                 <div class="p-5">
-                    {{-- Header: Title + Priority --}}
-                    <div class="flex items-start justify-between gap-3 mb-3">
-                        <a href="{{ route('tasks.show', $task) }}" class="block flex-1 min-w-0">
+                    {{-- Header: [☐] Title + Priority + Pin --}}
+                    <div class="flex items-start gap-2 mb-3">
+
+                        {{-- Custom checkbox — inline left of title --}}
+                        <label class="relative flex-shrink-0 w-[18px] h-[18px] mt-0.5 cursor-pointer">
+                            <input type="checkbox" value="{{ $task->id }}" data-task-id="{{ $task->id }}" class="tasks-page-checkbox peer absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <span class="absolute inset-0 rounded border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 peer-checked:bg-indigo-500 peer-checked:border-transparent transition-all duration-150"></span>
+                            <svg class="absolute inset-0 w-full h-full p-0.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        </label>
+
+                        {{-- Title --}}
+                        <a href="{{ route('tasks.show', $task) }}" class="flex-1 min-w-0">
                             <h3 class="font-semibold text-sm text-slate-800 dark:text-white leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition
                                {{ $task->status === 'completed' ? 'line-through text-slate-400 dark:text-slate-500' : '' }}">
                                 {{ $task->title }}
                             </h3>
                         </a>
+
+                        {{-- Priority badge --}}
                         <span class="text-[11px] px-2 py-0.5 rounded-lg font-semibold flex-shrink-0
                             @if($task->priority === 'urgent') bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400
                             @elseif($task->priority === 'high') bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400
@@ -166,7 +202,27 @@
                             @endif">
                             {{ ucfirst($task->priority) }}
                         </span>
+
+                        {{-- Pin button --}}
+                        <form action="{{ route('tasks.pin', $task) }}" method="POST" class="flex-shrink-0">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit"
+                                    class="flex items-center justify-center w-6 h-6 rounded-lg {{ $task->is_pinned ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10' }} transition-all"
+                                    title="{{ $task->is_pinned ? 'Unpin task' : 'Pin task' }}">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8.5 2.5a1 1 0 011 0l4 2.3a1 1 0 01.5.87V9l1.4 1.4a1 1 0 01-.7 1.7H11v4.5a1 1 0 11-2 0V12.1H5.3a1 1 0 01-.7-1.7L6 9V5.67a1 1 0 01.5-.87l2-1.15z"/>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
+
+                    @if($task->is_pinned)
+                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-full mb-2">
+                            <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M8.5 2.5a1 1 0 011 0l4 2.3a1 1 0 01.5.87V9l1.4 1.4a1 1 0 01-.7 1.7H11v4.5a1 1 0 11-2 0V12.1H5.3a1 1 0 01-.7-1.7L6 9V5.67a1 1 0 01.5-.87l2-1.15z"/></svg>
+                            Pinned
+                        </span>
+                    @endif
 
                     {{-- Description --}}
                     @if($task->description)
@@ -287,6 +343,7 @@
         @endforelse
     </div>
 
+
     {{-- ═══════════ PAGINATION ═══════════ --}}
     @if($tasks->hasPages())
     <div class="mt-8">
@@ -295,3 +352,70 @@
     @endif
 
 @endsection
+
+@push('scripts')
+<script>
+window.addEventListener('load', function () {
+    var form = document.getElementById('tasks-bulk-form');
+    if (!form) return;
+
+    function getBoxes() {
+        return Array.from(document.querySelectorAll('.tasks-page-checkbox'));
+    }
+
+    function updateState() {
+        var boxes    = getBoxes();
+        var selected = boxes.filter(function (c) { return c.checked; });
+        var sa       = document.getElementById('tasks-select-all');
+        var statusEl = document.getElementById('tasks-bulk-status');
+        var btn      = document.getElementById('tasks-bulk-submit');
+
+        if (sa) {
+            if (boxes.length > 0 && selected.length === boxes.length) {
+                sa.checked = true; sa.indeterminate = false;
+            } else if (selected.length > 0) {
+                sa.checked = false; sa.indeterminate = true;
+            } else {
+                sa.checked = false; sa.indeterminate = false;
+            }
+        }
+        if (btn) btn.disabled = (selected.length === 0 || !statusEl || !statusEl.value);
+    }
+
+    /* ── Event delegation — survives Vue's DOM replacement ── */
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'tasks-select-all') {
+            var checked = e.target.checked;
+            getBoxes().forEach(function (cb) { cb.checked = checked; });
+        }
+        updateState();
+    });
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('#tasks-bulk-submit');
+        if (!btn || btn.disabled) return;
+
+        var selected = getBoxes().filter(function (c) { return c.checked; });
+        var statusEl = document.getElementById('tasks-bulk-status');
+        if (!selected.length || !statusEl || !statusEl.value) return;
+
+        /* Inject hidden task_ids + status into the hidden form, then submit */
+        form.querySelectorAll('.bulk-injected').forEach(function (el) { el.remove(); });
+        selected.forEach(function (cb) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'task_ids[]'; inp.value = cb.value;
+            inp.className = 'bulk-injected';
+            form.appendChild(inp);
+        });
+        var sinp = document.createElement('input');
+        sinp.type = 'hidden'; sinp.name = 'status'; sinp.value = statusEl.value;
+        sinp.className = 'bulk-injected';
+        form.appendChild(sinp);
+
+        form.submit();
+    });
+
+    updateState();
+});
+</script>
+@endpush

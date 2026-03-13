@@ -42,6 +42,8 @@ class Task extends Model
         'status',
         'due_date',
         'completed_at',
+        'is_pinned',
+        'pinned_at',
     ];
 
     /**
@@ -54,6 +56,8 @@ class Task extends Model
         return [
             'due_date'     => 'date',
             'completed_at' => 'datetime',
+            'is_pinned'    => 'boolean',
+            'pinned_at'    => 'datetime',
         ];
     }
 
@@ -118,6 +122,11 @@ class Task extends Model
     public function scopeForUser($query, int $userId)
     {
         return $query->where('user_id', $userId);
+    }
+
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
     }
 
     // ──────────────────────────────────────────────

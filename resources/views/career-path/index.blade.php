@@ -111,21 +111,36 @@
                 $pct = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
                 $barColor = $pct >= 100 ? '#10b981' : ($pct > 50 ? '#f59e0b' : '#6366f1');
             @endphp
-            <a href="{{ route('career-path.show', $path) }}"
-               class="block bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden hover-lift hover-glow card-shine group animate-fade-in-up stagger-{{ min($index + 1, 8) }} opacity-0">
+            <div class="block bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden hover-lift hover-glow card-shine group animate-fade-in-up stagger-{{ min($index + 1, 8) }} opacity-0">
                 {{-- Top bar --}}
                 <div class="h-1.5" style="background: linear-gradient(90deg, {{ $barColor }}, {{ $barColor }}80);"></div>
                 <div class="p-5">
                     {{-- Header --}}
                     <div class="flex items-start justify-between gap-2 mb-3">
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-sm text-slate-800 dark:text-white leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition truncate">{{ $path->title }}</h3>
+                            <a href="{{ route('career-path.show', $path) }}" class="block">
+                                <h3 class="font-semibold text-sm text-slate-800 dark:text-white leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition truncate">{{ $path->title }}</h3>
+                            </a>
                             <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $path->target_role }}</p>
+                            @if($path->is_pinned)
+                                <p class="text-[11px] text-amber-500 font-medium mt-1">Pinned path</p>
+                            @endif
                         </div>
-                        <span class="text-[10px] px-2 py-0.5 rounded-lg font-semibold flex-shrink-0
-                            {{ $path->source === 'ai' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' }}">
-                            {{ $path->source === 'ai' ? '🤖 AI' : '✍️ Manual' }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg font-semibold flex-shrink-0
+                                {{ $path->source === 'ai' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' }}">
+                                {{ $path->source === 'ai' ? '🤖 AI' : '✍️ Manual' }}
+                            </span>
+                            <form action="{{ route('career-path.pin', $path) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="p-1.5 rounded-lg {{ $path->is_pinned ? 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10' }} transition-colors" title="{{ $path->is_pinned ? 'Unpin career path' : 'Pin career path' }}">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.5 2.5a1 1 0 011 0l4 2.3a1 1 0 01.5.87V9l1.4 1.4a1 1 0 01-.7 1.7H11v4.5a1 1 0 11-2 0V12.1H5.3a1 1 0 01-.7-1.7L6 9V5.67a1 1 0 01.5-.87l2-1.15z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     @if($path->description)
@@ -176,15 +191,18 @@
                             </span>
                             @endif
                         </div>
-                        <span class="inline-flex px-2 py-0.5 rounded-lg text-[10px] font-semibold
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex px-2 py-0.5 rounded-lg text-[10px] font-semibold
                             @if($path->status === 'active') bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
                             @elseif($path->status === 'completed') bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400
                             @elseif($path->status === 'paused') bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400
                             @else bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400
                             @endif">{{ ucfirst($path->status) }}</span>
+                            <a href="{{ route('career-path.show', $path) }}" class="text-[11px] px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">Open</a>
+                        </div>
                     </div>
                 </div>
-            </a>
+            </div>
         @empty
             <div class="sm:col-span-2 lg:col-span-3 text-center py-20 bg-white dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl animate-fade-in-up">
                 <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center mx-auto mb-4">

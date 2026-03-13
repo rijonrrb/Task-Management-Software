@@ -59,6 +59,13 @@
                     @endif
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
+                    <form action="{{ route('career-path.pin', $careerPath) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <button class="px-4 py-2 {{ $careerPath->is_pinned ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-500 dark:text-amber-400' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-100 dark:border-slate-600 text-slate-500 dark:text-slate-300' }} border text-sm font-medium rounded-xl hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all">
+                            {{ $careerPath->is_pinned ? 'Unpin' : 'Pin' }}
+                        </button>
+                    </form>
                     <a href="{{ route('career-path.edit', $careerPath) }}" class="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all">Edit</a>
                     <form action="{{ route('career-path.destroy', $careerPath) }}" method="POST" onsubmit="return confirm('Delete this career path and all its tasks?')">
                         @csrf @method('DELETE')

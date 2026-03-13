@@ -29,6 +29,8 @@ class CareerPath extends Model
         'tags',
         'metadata',
         'sort_order',
+        'is_pinned',
+        'pinned_at',
     ];
 
     protected function casts(): array
@@ -39,6 +41,8 @@ class CareerPath extends Model
             'completed_at' => 'date',
             'tags'         => 'array',
             'metadata'     => 'array',
+            'is_pinned'    => 'boolean',
+            'pinned_at'    => 'datetime',
         ];
     }
 
@@ -82,6 +86,11 @@ class CareerPath extends Model
     public function scopeAi($query)
     {
         return $query->where('source', 'ai');
+    }
+
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
     }
 
     // ── Accessors ──

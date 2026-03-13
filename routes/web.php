@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
      * DELETE /tasks/{task}    → destroy (delete)
      */
     Route::resource('tasks', TaskController::class);
+    Route::post('/tasks/bulk-status', [TaskController::class, 'bulkUpdateStatus'])->name('tasks.bulk-status');
+    Route::patch('/tasks/{task}/pin', [TaskController::class, 'togglePin'])->name('tasks.pin');
 
     /**
      * Categories — Using only the routes we need
@@ -115,6 +117,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{careerPath}', [CareerPathController::class, 'show'])->name('show');
         Route::get('/{careerPath}/edit', [CareerPathController::class, 'edit'])->name('edit');
         Route::put('/{careerPath}', [CareerPathController::class, 'update'])->name('update');
+        Route::patch('/{careerPath}/pin', [CareerPathController::class, 'togglePin'])->name('pin');
         Route::delete('/{careerPath}', [CareerPathController::class, 'destroy'])->name('destroy');
 
         // Nested Task routes
