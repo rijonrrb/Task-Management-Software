@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AiController as AdminAiController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CustomPageController as AdminPageController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -57,6 +58,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+        Route::prefix('ai')->name('ai.')->group(function () {
+            Route::get('/settings', [AdminAiController::class, 'settings'])->name('settings');
+            Route::put('/settings', [AdminAiController::class, 'updateSettings'])->name('settings.update');
+            Route::get('/prompts', [AdminAiController::class, 'prompts'])->name('prompts.index');
+            Route::get('/prompts/{prompt}/edit', [AdminAiController::class, 'editPrompt'])->name('prompts.edit');
+            Route::put('/prompts/{prompt}', [AdminAiController::class, 'updatePrompt'])->name('prompts.update');
+            Route::post('/prompts/{prompt}/toggle', [AdminAiController::class, 'togglePrompt'])->name('prompts.toggle');
+        });
 
         Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile.index');
         Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');

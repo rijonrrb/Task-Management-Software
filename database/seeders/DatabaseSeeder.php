@@ -99,6 +99,9 @@ class DatabaseSeeder extends Seeder
         // ── Step 5: Seed Career Paths ─────────────────────────────
         $this->call(CareerPathSeeder::class);
 
+        // ── Step 6: Seed AI Prompts & Settings ────────────────────
+        $this->call(AiSeeder::class);
+
         // ── Summary ─────────────────────────────────────────────
         $this->command->info('');
         $this->command->info('✅ Database seeded successfully!');

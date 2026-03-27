@@ -9,6 +9,7 @@
  */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AutomatedTaskController;
 use App\Http\Controllers\CareerPathController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -126,6 +127,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/{careerPath}/tasks/{task}/edit', [CareerPathController::class, 'editTask'])->name('task.edit');
         Route::put('/{careerPath}/tasks/{task}', [CareerPathController::class, 'updateTask'])->name('task.update');
         Route::delete('/{careerPath}/tasks/{task}', [CareerPathController::class, 'destroyTask'])->name('tasks.destroy');
+    });
+
+    /**
+     * Automated Tasks — AI-Powered Task Generation
+     */
+    Route::prefix('automated-task')->name('automated-task.')->group(function () {
+        Route::get('/', [AutomatedTaskController::class, 'index'])->name('index');
+        Route::get('/career-path', [AutomatedTaskController::class, 'careerPathForm'])->name('career-path');
+        Route::post('/career-path/generate', [AutomatedTaskController::class, 'generateCareerPath'])->name('career-path.generate');
     });
 
     /**
