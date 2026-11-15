@@ -2,8 +2,6 @@
 
 **A productivity platform for organizing daily tasks, tracking progress, and turning larger goals into actionable steps.**
 
-[Explore the Source](https://github.com/rijonrrb/Task-Management-Software)
-
 ## Overview
 
 Task Management Software is an evolving web application designed to make everyday planning more structured. It combines personal task management with goal-oriented learning and career-path planning in one place.
